@@ -65,7 +65,7 @@
       const responseBox = document.getElementById("response");
       responseBox.innerText = "🎨 La Gioconda te observa y analiza tu esencia...";
       try {
-        const res = await fetch("/api/analyze", {
+        const res = await fetch("https://monalisa-gemini-production.up.railway.app/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: imageData }),
