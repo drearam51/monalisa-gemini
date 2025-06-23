@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>La Gioconda te observa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Lora', serif;
+      background-image: url('https://www.theflorentine.net/wp-content/uploads/2020/07/Leonardo-da-vinci-vitruvian-man-1.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+    .font-cinzel {
+      font-family: 'Cinzel', serif;
+    }
+    .card-container {
+      background-color: rgba(243, 237, 225, 0.95);
+      border: 3px solid #8c7851;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+    .frase-davinci::before {
+      content: "“";
+      font-family: 'Cinzel', serif;
+      font-size: 3em;
+      color: #a88f6f;
+      opacity: 0.7;
+      vertical-align: top;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-6">
+  <div class="card-container rounded-lg max-w-4xl w-full mx-auto p-8 text-center">
+    <h1 class="font-cinzel text-4xl md:text-5xl font-bold text-[#7c5e3c] mb-2">La Mona Lisa te observa...</h1>
+    <p class="text-[#5a4734] text-lg mb-6">Activa tu cámara, toma una imagen, y deja que Da Vinci describa lo que ve en tu alma.</p>
+
+    <video id="video" width="320" height="240" autoplay class="mx-auto rounded-md shadow-md"></video><br/>
+    <button onclick="takePhoto()" class="mt-4 px-6 py-2 text-white bg-[#7c5e3c] hover:bg-[#5a3e28] rounded-lg font-semibold">📸 Tomar Foto</button>
+
+    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+    <div id="response" class="mt-6 text-[#4d392b] text-xl italic frase-davinci leading-relaxed"></div>
+  </div>
+
+  <script>
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      document.getElementById("video").srcObject = stream;
+    });
+
+    function takePhoto() {
+      const canvas = document.getElementById("canvas");
+      const video = document.getElementById("video");
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
+      sendToServer(imageBase64);
+    }
+
+    async function sendToServer(imageData) {
+      const responseBox = document.getElementById("response");
+      responseBox.innerText = "🎨 La Gioconda te observa y analiza tu esencia...";
+      try {
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: imageData }),
+        });
+        const data = await res.json();
+        responseBox.innerHTML = `
+        <p class="mb-4">He aquí el reflejo de un alma observada bajo la luz de mi estudio en Florencia, como si el tiempo me susurrara sus secretos desde tu mirada…</p>
+        <p class="text-lg text-[#3e2f23] italic leading-relaxed">${data.message}</p>
+        `;
+
+      } catch (err) {
+        responseBox.innerText = "❌ Error en el análisis de Da Vinci. Intenta nuevamente.";
+      }
+    }
+  </script>
+</body>
+</html>
