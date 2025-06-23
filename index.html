@@ -34,18 +34,14 @@
       vertical-align: top;
     }
 
-    .typewriter {
-      display: inline-block;
-      white-space: pre-wrap;
-      overflow: hidden;
-      border-right: 2px solid #a88f6f;
-      animation: blinkCursor 0.7s steps(1) infinite;
+    .fade-in {
+      animation: fadeIn 1.2s ease-in forwards;
+      opacity: 0;
     }
 
-    @keyframes blinkCursor {
-      0% { border-color: #a88f6f; }
-      50% { border-color: transparent; }
-      100% { border-color: #a88f6f; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -59,11 +55,10 @@
 
     <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
 
-    <div id="response" class="mt-6 text-[#4d392b] text-xl italic frase-davinci leading-relaxed"></div>
+    <div id="response" class="mt-6 text-[#4d392b] text-lg italic frase-davinci leading-snug text-justify fade-in"></div>
   </div>
 
   <script>
-    // Activar cámara
     navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
       document.getElementById("video").srcObject = stream;
     });
@@ -78,6 +73,7 @@
 
     async function sendToServer(imageData) {
       const responseBox = document.getElementById("response");
+      responseBox.classList.remove("fade-in");
       responseBox.innerText = "🎨 La Gioconda te observa y analiza tu esencia...";
 
       try {
@@ -90,32 +86,17 @@
         const data = await res.json();
 
         if (data.description) {
-          typeWriterEffect(data.description, responseBox);
+          responseBox.innerHTML = `
+            <p class="mb-3">He aquí el reflejo de un alma observada bajo la luz de mi estudio en Florencia, como si el tiempo me susurrara sus secretos desde tu mirada…</p>
+            <p>${data.description}</p>
+          `;
+          responseBox.classList.add("fade-in");
         } else {
           responseBox.innerText = "⚠️ No se pudo obtener la descripción. Intenta de nuevo.";
         }
       } catch (err) {
         responseBox.innerText = "❌ Error en el análisis de Da Vinci. Intenta nuevamente.";
       }
-    }
-
-    function typeWriterEffect(text, container, delay = 25) {
-      container.innerHTML = `
-        <p class="mb-4">He aquí el reflejo de un alma observada bajo la luz de mi estudio en Florencia, como si el tiempo me susurrara sus secretos desde tu mirada…</p>
-        <p id="typewriter" class="text-lg text-[#3e2f23] italic leading-relaxed typewriter"></p>
-      `;
-
-      const target = document.getElementById("typewriter");
-      let index = 0;
-
-      const interval = setInterval(() => {
-        target.textContent += text.charAt(index);
-        index++;
-        if (index >= text.length) {
-          clearInterval(interval);
-          target.classList.remove("typewriter"); // Detener cursor al final
-        }
-      }, delay);
     }
   </script>
 </body>
