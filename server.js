@@ -46,6 +46,10 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
+app.get("/", (_, res) => {
+  res.send("✅ Backend de La Gioconda está vivo.");
+});
+
 app.listen(3000, () => {
   console.log("Servidor activo en http://localhost:3000");
 });
