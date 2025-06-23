@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
+
+app.use(cors());
 
 dotenv.config();
 const app = express();
