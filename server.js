@@ -30,7 +30,7 @@ app.post("/api/analyze", async (req, res) => {
       {
         inlineData: {
           mimeType: "image/jpeg",
-          data: image.split(",")[1], // separamos el base64 del encabezado
+          data: image.replace(/^data:image\/\w+;base64,/, ""), // separamos el base64 del encabezado
         },
       },
       {
@@ -39,7 +39,8 @@ app.post("/api/analyze", async (req, res) => {
     ]);
 
     const response = await result.response;
-    const text = response.text();
+    const text = await response.text();
+    console.log("🖋️ Descripción generada:", text);
     res.json({ description: text });
   } catch (error) {
     console.error("❌ Error analizando la imagen:", error);
