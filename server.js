@@ -8,19 +8,16 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// ✅ Habilitar CORS
 app.use(cors());
-
-// ✅ Parsear JSON
 app.use(express.json());
 
-// ✅ Configurar Gemini 1.5 Vision
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// ✅ Modelo actualizado
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-vision-preview",
 });
 
-// ✅ Endpoint de análisis
 app.post("/api/analyze", async (req, res) => {
   try {
     const image = req.body.image;
@@ -33,7 +30,7 @@ app.post("/api/analyze", async (req, res) => {
       {
         inlineData: {
           mimeType: "image/jpeg",
-          data: image.split(",")[1],
+          data: image.split(",")[1], // separamos el base64 del encabezado
         },
       },
       {
@@ -50,11 +47,11 @@ app.post("/api/analyze", async (req, res) => {
   }
 });
 
-// ✅ Ruta de prueba
+// Ruta de prueba (opcional)
 app.get("/", (_, res) => {
-  res.send("✅ Backend de La Gioconda está vivo.");
+  res.send("Servidor de La Gioconda está vivo.");
 });
 
 app.listen(port, () => {
-  console.log(`Servidor activo en http://localhost:${port}`);
+  console.log(`✅ Servidor activo en http://localhost:${port}`);
 });
