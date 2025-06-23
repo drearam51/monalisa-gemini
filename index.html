@@ -33,6 +33,20 @@
       opacity: 0.7;
       vertical-align: top;
     }
+
+    .typewriter {
+      display: inline-block;
+      white-space: pre-wrap;
+      overflow: hidden;
+      border-right: 2px solid #a88f6f;
+      animation: blinkCursor 0.7s steps(1) infinite;
+    }
+
+    @keyframes blinkCursor {
+      0% { border-color: #a88f6f; }
+      50% { border-color: transparent; }
+      100% { border-color: #a88f6f; }
+    }
   </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-6">
@@ -49,6 +63,7 @@
   </div>
 
   <script>
+    // Activar cámara
     navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
       document.getElementById("video").srcObject = stream;
     });
@@ -64,21 +79,43 @@
     async function sendToServer(imageData) {
       const responseBox = document.getElementById("response");
       responseBox.innerText = "🎨 La Gioconda te observa y analiza tu esencia...";
+
       try {
         const res = await fetch("https://monalisa-gemini-production.up.railway.app/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ image: imageData }),
         });
-        const data = await res.json();
-        responseBox.innerHTML = `
-        <p class="mb-4">He aquí el reflejo de un alma observada bajo la luz de mi estudio en Florencia, como si el tiempo me susurrara sus secretos desde tu mirada…</p>
-        <p class="text-lg text-[#3e2f23] italic leading-relaxed">${data.message}</p>
-        `;
 
+        const data = await res.json();
+
+        if (data.description) {
+          typeWriterEffect(data.description, responseBox);
+        } else {
+          responseBox.innerText = "⚠️ No se pudo obtener la descripción. Intenta de nuevo.";
+        }
       } catch (err) {
         responseBox.innerText = "❌ Error en el análisis de Da Vinci. Intenta nuevamente.";
       }
+    }
+
+    function typeWriterEffect(text, container, delay = 25) {
+      container.innerHTML = `
+        <p class="mb-4">He aquí el reflejo de un alma observada bajo la luz de mi estudio en Florencia, como si el tiempo me susurrara sus secretos desde tu mirada…</p>
+        <p id="typewriter" class="text-lg text-[#3e2f23] italic leading-relaxed typewriter"></p>
+      `;
+
+      const target = document.getElementById("typewriter");
+      let index = 0;
+
+      const interval = setInterval(() => {
+        target.textContent += text.charAt(index);
+        index++;
+        if (index >= text.length) {
+          clearInterval(interval);
+          target.classList.remove("typewriter"); // Detener cursor al final
+        }
+      }, delay);
     }
   </script>
 </body>
