@@ -35,8 +35,7 @@
     }
 
     .fade-in {
-      animation: fadeIn 1.2s ease-in forwards;
-      opacity: 0;
+      animation: fadeIn 1s ease-in;
     }
 
     @keyframes fadeIn {
@@ -50,8 +49,10 @@
     <h1 class="font-cinzel text-4xl md:text-5xl font-bold text-[#7c5e3c] mb-2">La Mona Lisa te observa...</h1>
     <p class="text-[#5a4734] text-lg mb-6">Activa tu cámara, toma una imagen, y deja que Da Vinci describa lo que ve en tu alma.</p>
 
-    <video id="video" width="320" height="240" autoplay class="mx-auto rounded-md shadow-md"></video><br/>
-    <button onclick="takePhoto()" class="mt-4 px-6 py-2 text-white bg-[#7c5e3c] hover:bg-[#5a3e28] rounded-lg font-semibold">📸 Tomar Foto</button>
+    <video id="video" width="320" height="240" autoplay muted playsinline class="mx-auto rounded-md shadow-md hidden"></video><br/>
+
+    <button id="startBtn" onclick="startCamera()" class="mt-4 px-6 py-2 text-white bg-[#7c5e3c] hover:bg-[#5a3e28] rounded-lg font-semibold">🎥 Activar Cámara</button>
+    <button id="photoBtn" onclick="takePhoto()" class="mt-4 px-6 py-2 text-white bg-[#7c5e3c] hover:bg-[#5a3e28] rounded-lg font-semibold hidden">📸 Tomar Foto</button>
 
     <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
 
@@ -59,14 +60,34 @@
   </div>
 
   <script>
-    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-      document.getElementById("video").srcObject = stream;
-    });
+    let videoStream;
+
+    function startCamera() {
+      const video = document.getElementById("video");
+      const startBtn = document.getElementById("startBtn");
+      const photoBtn = document.getElementById("photoBtn");
+
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" }, audio: false
+      })
+      .then(stream => {
+        videoStream = stream;
+        video.srcObject = stream;
+        video.classList.remove("hidden");
+        photoBtn.classList.remove("hidden");
+        startBtn.classList.add("hidden");
+      })
+      .catch(err => {
+        alert("❌ No se pudo acceder a la cámara. Revisa los permisos en Safari o Chrome.");
+        console.error(err);
+      });
+    }
 
     function takePhoto() {
       const canvas = document.getElementById("canvas");
       const video = document.getElementById("video");
-      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+      const context = canvas.getContext("2d");
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
       sendToServer(imageBase64);
     }
@@ -96,6 +117,7 @@
         }
       } catch (err) {
         responseBox.innerText = "❌ Error en el análisis de Da Vinci. Intenta nuevamente.";
+        console.error(err);
       }
     }
   </script>
