@@ -87,10 +87,16 @@
       const canvas = document.getElementById("canvas");
       const video = document.getElementById("video");
       const context = canvas.getContext("2d");
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageBase64 = canvas.toDataURL("image/jpeg", 0.7).split(",")[1];
-      sendToServer(imageBase64);
+
+      // Esperar 100ms antes de capturar
+      setTimeout(() => {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageBase64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+        console.log("base64 length:", imageBase64.length);
+        sendToServer(imageBase64);
+      }, 100);
     }
+
 
     async function sendToServer(imageData) {
       const responseBox = document.getElementById("response");
