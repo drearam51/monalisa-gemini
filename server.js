@@ -1,58 +1,60 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import cors from 'cors';
-
-app.use(cors());
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config();
+
 const app = express();
-app.use(express.json({ limit: '10mb' }));
+const port = process.env.PORT || 3000;
 
-// Permitir servir index.html
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use(express.static(__dirname));
+// ✅ Habilitar CORS
+app.use(cors());
 
+// ✅ Parsear JSON
+app.use(express.json());
+
+// ✅ Configurar Gemini 1.5 Vision
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-vision-preview",
+});
 
-app.post('/api/analyze', async (req, res) => {
-  const { image } = req.body;
-
+// ✅ Endpoint de análisis
+app.post("/api/analyze", async (req, res) => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const image = req.body.image;
 
-    const result = await model.generateContent({
-      contents: [{
-        parts: [
-          {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: image,
-            }
-          },
-          {
-            text: `Eres Leonardo Da Vinci. Describe a la persona en esta imagen como si la estuvieras pintando en 1505. Sé poético, filosófico y profundo. Usa menos de 60 palabras.`
-          }
-        ]
-      }]
-    });
+    if (!image) {
+      return res.status(400).json({ error: "No se envió ninguna imagen" });
+    }
+
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          mimeType: "image/jpeg",
+          data: image.split(",")[1],
+        },
+      },
+      {
+        text: `Describe este rostro como si fueras Leonardo da Vinci en una carta del año 1505. Usa un lenguaje poético y renacentista, como si observaras su alma a través del pincel.`,
+      },
+    ]);
 
     const response = await result.response;
-    res.json({ message: response.text() });
-
+    const text = response.text();
+    res.json({ description: text });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error analizando la imagen" });
+    console.error("❌ Error analizando la imagen:", error);
+    res.status(500).json({ error: "Error analizando la imagen" });
   }
 });
 
+// ✅ Ruta de prueba
 app.get("/", (_, res) => {
   res.send("✅ Backend de La Gioconda está vivo.");
 });
 
-app.listen(3000, () => {
-  console.log("Servidor activo en http://localhost:3000");
+app.listen(port, () => {
+  console.log(`Servidor activo en http://localhost:${port}`);
 });
