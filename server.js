@@ -15,7 +15,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // ✅ Modelo actualizado
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-vision-preview",
+  model: "gemini-1.5-flash",
 });
 
 app.post("/api/analyze", async (req, res) => {
